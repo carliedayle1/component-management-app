@@ -3,10 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\BorrowComponent;
+use App\Notifications\BorrowRequest;
+use App\Notifications\NotifyBorrower;
+use App\Notifications\OverdueBorrower;
 use Carbon\Carbon;
 use App\Component;
 use App\Borrow;
+use App\User;
 
 class BorrowController extends Controller
 {
@@ -32,6 +39,10 @@ class BorrowController extends Controller
 
         $component->update([ 'status' => 'BORROWED']);
 
+        $users = User::where('account_type','admin')->get();
+
+        Notification::send($users, new BorrowComponent($component, Auth::user()->name));
+
         Borrow::forceCreate($validated);
 
         return redirect('/components')->with('component_borrowed', 'Success');
@@ -39,7 +50,11 @@ class BorrowController extends Controller
 
     public function logs()
     {
-        $logs = Borrow::all();
+        if(Auth::user()->account_type == 'admin' || Auth::user()->account_type == 'working student'){
+            $logs = Borrow::all();
+        } else {
+            $logs = Borrow::where('user_id', Auth::user()->id)->get();
+        }
 
         return view('borrows.index', compact('logs'));
     }
@@ -58,8 +73,40 @@ class BorrowController extends Controller
             'status' => 'sometimes|string',
         ]);
 
+        $user = User::findOrFail($borrow->user_id);
+        if(request('status') == 'APPROVED'){
+            Notification::send($user, new BorrowRequest($borrow->component, true));
+        } else if(request('status') == 'DENIED') {
+            Notification::send($user, new BorrowRequest($borrow->component, false));
+        }
+
         $borrow->update($validated);
 
         return redirect('/borrowlogs')->with('borrow_updated', 'Success');
+    }
+
+    public function notify()
+    {
+        $borrows = Borrow::whereBetween('return_date', [Carbon::today(),Carbon::today()->addDays(3)])
+        ->where('status', 'APPROVED')->get();
+
+        $overdue = Borrow::whereDate('return_date', '<', Carbon::today())
+        ->where('status', 'APPROVED')->get();
+        
+        if($borrows->count()){
+            foreach($borrows as $borrow){
+                $borrow->user->notify(new NotifyBorrower($borrow));
+            }
+        }
+
+        if($overdue->count()){
+            foreach($overdue as $borrow){
+                $borrow->user->notify(new OverdueBorrower($borrow));
+            }
+        }
+
+
+
+        return back()->with('borrowers_notified', 'Success');
     }
 }

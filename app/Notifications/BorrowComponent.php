@@ -8,22 +8,23 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use App\Component;
 
-class SubmitReport extends Notification
+class BorrowComponent extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public $component;
-    public $sender;
+    public $borrower;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(Component $component, $sender)
+    public function __construct(Component $component, $borrower)
     {
         $this->component = $component;
-        $this->sender = $sender;
+        $this->borrower = $borrower;
+
     }
 
     /**
@@ -34,7 +35,7 @@ class SubmitReport extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -46,9 +47,12 @@ class SubmitReport extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+                    ->subject('Borrow Component Request')
+                    ->greeting('Hello!')
+                    ->line('Mr/Ms. '. $this->borrower .' has requested to borrow '. $this->component->name .' with a model number of '. $this->component->model_number)
+                    ->line('The status of this request is now on PENDING')
+                    ->action('Borrow Logs', url('http://127.0.0.1:8000/borrowlogs'))
+                    ->line('Thank you and have a great day!');
     }
 
     /**
@@ -57,19 +61,15 @@ class SubmitReport extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    // public function toArray($notifiable)
-    // {
-    //     return [
-    //         'data' => 'Sample notification'
-    //     ];
-    // }
-
     public function toDatabase($notifiable)
     {
+        $message = 'Mr/Ms. '. $this->borrower .' has requested to borrow the '. $this->component->name .' with a model number of '. $this->component->model_number;
+
+
         return [
-            'subject' => 'Report submission',
-            'message' => 'The '. $this->component->name .' with a model number of '.$this->component->model_number.' has been reported by '. $this->sender,
-            'url' => '/reports'
+            'subject' => 'Borrow Component Request',
+            'message' => $message,
+            'url' => '/borrowlogs'
         ];
     }
 }

@@ -113,12 +113,16 @@
                             <div class="list-group ">
                                 <a href="/components" class="list-group-item list-group-item-action">Component list</a>
                                 <a href="/borrowlogs" class="list-group-item list-group-item-action">Borrow Logs</a>
-                                <a href="/components/create" class="list-group-item list-group-item-action">Add
-                                    component</a>
-                                <a href="/components/archives" class="list-group-item list-group-item-action">Archived
-                                    components</a>
-                                <a href="/components/transactions"
-                                    class="list-group-item list-group-item-action">Transaction history</a>
+                                
+                                @if(Auth::user()->account_type == 'admin' || Auth::user()->account_type == 'working
+                                student')
+                                    <a href="/components/create" class="list-group-item list-group-item-action">Add
+                                        component</a>
+                                    <a href="/components/archives" class="list-group-item list-group-item-action">Archived
+                                        components</a>
+                                    <a href="/components/transactions"
+                                        class="list-group-item list-group-item-action">Transaction history</a>
+                                @endif
                             </div>
 
                         </div>
@@ -190,16 +194,34 @@
                     <div class="card">
                         <div class="card-header" id="headingFive">
                             <h2 class="mb-0">
-                                <a href='/notifications'
+                                <a href='/profile'
                                     class="btn btn-block text-left collapsed d-flex justify-content-between align-items-center"
                                     type="button">
-                                    <strong>Notifications</strong> <span
-                                        class="badge badge-pill badge-danger ml-3">150</span>
+                                    <strong>Profile</strong>
                                 </a>
                             </h2>
                         </div>
 
                     </div>
+
+                    <div class="card">
+                        <div class="card-header" id="headingFive">
+                            <h2 class="mb-0">
+                                <a href='/notifications'
+                                    class="btn btn-block text-left collapsed d-flex justify-content-between align-items-center"
+                                    type="button">
+                                    <strong>Notifications</strong>
+                                    @if(Auth::user()->unreadNotifications->count())
+                                    <span
+                                        class="badge badge-pill badge-danger ml-3">{{Auth::user()->unreadNotifications->count()}}</span>
+                                    @endif
+                                </a>
+                            </h2>
+                        </div>
+
+                    </div>
+
+
                 </div>
 
             </div>
@@ -216,7 +238,7 @@
                             d="M2 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
                     </svg></button>
 
-                    <a class="navbar-brand ml-2 text-light" href="/home">Asset Tracking System</a>
+                <a class="navbar-brand ml-2 text-light" href="/home">Asset Tracking System</a>
 
                 <button class="navbar-toggler" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
@@ -245,7 +267,7 @@
 
     </div>
 
-   
+
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
@@ -262,20 +284,19 @@
     <!-- <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script> -->
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
-   <script>
-     $(document).ready( function () {
-				$('.table').DataTable(
-					{
-					columnDefs: [
-						{ orderable: false, targets: 0 }
-					],
-					order: [[1, 'asc']]
-					}
-				);
-			} );
+    <script>
+        $(document).ready(function () {
+            $('.table').DataTable({
+                // columnDefs: [
+                //     { orderable: false, targets: 0 }
+                // ],
+                // order: [[1, 'asc']]
+                "aaSorting": []
+            });
+        });
 
-   </script>
-   @stack('scripts')
+    </script>
+    @stack('scripts')
     <script>
         $("#menu-toggle").click(function (e) {
             e.preventDefault();

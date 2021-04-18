@@ -5,9 +5,51 @@
     <h1>Component list</h1>
     <div class="mt-2">
         <a href="/components/create"> <button class="btn btn-primary"> <strong>ADD COMPONENT</strong></button> </a>
-        <a href="/components"> <button class="btn btn-secondary"> <strong>EXPORT COMPONENTS</strong></button> </a>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#exportModal"> <strong>EXPORT
+                COMPONENTS</strong></button>
     </div>
 </div>
+<form action="/exports/components" method="POST">
+    @csrf
+    <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Export Components</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" id="start_date" value="{{old('start_date') ? old('start_date'):'' }}"
+                            aria-describedby="start_date" placeholder="Enter start_date">
+
+                        @error('start_date')
+                        <small id="start_date" class="form-text text-danger">{{$message}}</small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" name="end_date" class="form-control" id="end_date" value="{{old('end_date') ? old('end_date'):'' }}"
+                            aria-describedby="end_date" placeholder="Enter end date">
+
+                        @error('end_date')
+                        <small id="end_date" class="form-text text-danger">{{$message}}</small>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Download</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 <div class="container py-3">
     @if($components->count())
@@ -50,7 +92,9 @@
                         onclick="return generate_qr({{$component->id}})">Generate QR</button>
                     <a href="/components/report/{{$component->id}}" class="btn btn-sm btn-block btn-warning">Report</a>
                     <a href="/components/borrow/{{$component->id}}">
-                    <button class="btn btn-sm btn-block btn-primary mt-2" {{Auth::user()->borrow_status || $component->status == 'BORROWED' || $component->status == 'UNAVAILABLE'  ? '':'disabled'}}> Borrow</button>
+                        <button class="btn btn-sm btn-block btn-primary mt-2"
+                            {{ $component->status == 'BORROWED' || $component->status == 'UNAVAILABLE'  ? 'disabled':''}}
+                            {{Auth::user()->borrow_status ? '':'disabled'}}> Borrow</button>
                     </a>
                 </td>
 
@@ -72,13 +116,12 @@
                     </div>
 
                 </div>
-                    <div style="display:hidden">
-                        <form action="/components/delete/{{$component->id}}" method="POST"
-                            id="delete{{$component->id}}">
-                            @csrf
-                            @method('DELETE')
-                        </form>
-                    </div>
+                <div style="display:hidden">
+                    <form action="/components/delete/{{$component->id}}" method="POST" id="delete{{$component->id}}">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                </div>
             </tr>
             @endforeach
 
@@ -151,6 +194,14 @@
     )
     @endif
 
+    @if(Session::get('no_components'))
+    Swal.fire(
+        'Oops!',
+        'There are no data with the fields you entered in the exports',
+        'error'
+    )
+    @endif
+
 
 
     function generate_qr(id) {
@@ -181,6 +232,16 @@
             }
         })
     }
+    @error('start_date')
+        $( document ).ready(function() {
+            $('#exportModal').modal('show')
+        });
+    @enderror
+    @error('end_date')
+        $( document ).ready(function() {
+            $('#exportModal').modal('show')
+        });
+    @enderror
 
 </script>
 @endpush

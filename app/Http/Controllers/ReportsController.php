@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\SubmitReport;
 use Carbon\Carbon;
+use App\User;
 use App\Component;
 use App\Report;
 use App\ReportTransaction;
@@ -25,7 +28,6 @@ class ReportsController extends Controller
 
     public function view(Report $report)
     {
-
         return view('reports.view', compact('report'));
     }
 
@@ -88,6 +90,9 @@ class ReportsController extends Controller
 
         $validate['report_id'] = $validate['id'];
         self::storeTransaction($validate, 'STORE');
+
+        $user = User::findOrFail(Auth::user()->id);
+        Notification::send($user, new SubmitReport($component, $validate['submitted_by']));
 
         return redirect('/reports')->with('report_created',' Success');
     }

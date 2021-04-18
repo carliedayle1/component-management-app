@@ -62,8 +62,8 @@
                     <option value="" selected disabled>Please select a status</option>
                     <option value="PENDING"
                     {{old('status') === 'PENDING' || $borrow->status == 'PENDING' ? 'selected':''}}>PENDING</option>
-                    <option value="ACCEPTED"
-                    {{old('status') === 'ACCEPTED' || $borrow->status == 'ACCEPTED' ? 'selected':''}}>ACCEPTED</option>
+                    <option value="APPROVED"
+                    {{old('status') === 'APPROVED' || $borrow->status == 'ACCEPTED' ? 'selected':''}}>APPROVED</option>
                     <option value="DENIED"
                     {{old('status') === 'DENIED' || $borrow->status == 'DENIED' ? 'selected':''}}>DENIED</option>
                 </select>

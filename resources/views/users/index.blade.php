@@ -5,9 +5,52 @@
     <h1>Users list</h1>
     <div class="mt-2">
         <a href="/users/create"> <button class="btn btn-primary"> <strong>ADD USER</strong></button> </a>
-        <a href="/users/create"> <button class="btn btn-secondary"> <strong>EXPORT USERS</strong></button> </a>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#exportModal"> <strong>EXPORT
+                USERS</strong></button>
     </div>
 </div>
+
+<form action="/exports/users" method="POST">
+    @csrf
+    <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Export Users</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" id="start_date" value="{{old('start_date') ? old('start_date'):'' }}"
+                            aria-describedby="start_date" placeholder="Enter start_date">
+
+                        @error('start_date')
+                        <small id="start_date" class="form-text text-danger">{{$message}}</small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" name="end_date" class="form-control" id="end_date" value="{{old('end_date') ? old('end_date'):'' }}"
+                            aria-describedby="end_date" placeholder="Enter end date">
+
+                        @error('end_date')
+                        <small id="end_date" class="form-text text-danger">{{$message}}</small>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Download</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 <div class="container py-3">
     @if($users->count())
@@ -113,6 +156,25 @@
         'success'
     )
     @endif
+
+    @if(Session::get('no_users'))
+    Swal.fire(
+        'Oops!',
+        'There are no data with the fields you entered in the exports',
+        'error'
+    )
+    @endif
+
+    @error('start_date')
+        $( document ).ready(function() {
+            $('#exportModal').modal('show')
+        });
+    @enderror
+    @error('end_date')
+        $( document ).ready(function() {
+            $('#exportModal').modal('show')
+        });
+    @enderror
 
     function deleteUser(id) {
         Swal.fire({

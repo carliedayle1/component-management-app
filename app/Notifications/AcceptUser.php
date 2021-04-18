@@ -6,24 +6,20 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use App\Component;
+use App\User;
 
-class SubmitReport extends Notification
+class AcceptUser extends Notification implements ShouldQueue
 {
     use Queueable;
-
-    public $component;
-    public $sender;
-
+    public $user;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(Component $component, $sender)
+    public function __construct(User $user)
     {
-        $this->component = $component;
-        $this->sender = $sender;
+        $this->user = $user;
     }
 
     /**
@@ -34,7 +30,7 @@ class SubmitReport extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -46,9 +42,12 @@ class SubmitReport extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+                ->subject('User Registration')
+                ->greeting('Hello!')
+                ->line('Your request to register to the system has been verified')
+                ->line('You can now login to the system')
+                ->action('Login', url('http://127.0.0.1:8000/login'))
+                ->line('Thank you and have a great day!');
     }
 
     /**
@@ -57,19 +56,12 @@ class SubmitReport extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    // public function toArray($notifiable)
-    // {
-    //     return [
-    //         'data' => 'Sample notification'
-    //     ];
-    // }
-
-    public function toDatabase($notifiable)
+    public function toArray($notifiable)
     {
         return [
-            'subject' => 'Report submission',
-            'message' => 'The '. $this->component->name .' with a model number of '.$this->component->model_number.' has been reported by '. $this->sender,
-            'url' => '/reports'
+            'subject' => 'New user',
+            'message' => 'Hello and welcome to Asset Tracking, please go to the url to change your password.',
+            'url' => '/profile',
         ];
     }
 }

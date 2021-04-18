@@ -6,24 +6,20 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use App\Component;
+use App\Borrow;
 
-class SubmitReport extends Notification
+class OverdueBorrower extends Notification implements ShouldQueue
 {
     use Queueable;
-
-    public $component;
-    public $sender;
-
+    public $borrow;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(Component $component, $sender)
+    public function __construct(Borrow $borrow)
     {
-        $this->component = $component;
-        $this->sender = $sender;
+        $this->borrow = $borrow;
     }
 
     /**
@@ -34,7 +30,7 @@ class SubmitReport extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -46,9 +42,11 @@ class SubmitReport extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+                ->subject('Return Borrowed Component')
+                ->greeting('Hello '. $notifiable->name .' !')
+                ->line('The '. $this->borrow->component->name .' that you borrowed has been overdue. Please report to the department immediately')
+                ->action('Borrow logs', url('http://127.0.0.1:8000/borrowlogs'))
+                ->line('Thank you for using our application!');
     }
 
     /**
@@ -57,19 +55,12 @@ class SubmitReport extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    // public function toArray($notifiable)
-    // {
-    //     return [
-    //         'data' => 'Sample notification'
-    //     ];
-    // }
-
-    public function toDatabase($notifiable)
+    public function toArray($notifiable)
     {
         return [
-            'subject' => 'Report submission',
-            'message' => 'The '. $this->component->name .' with a model number of '.$this->component->model_number.' has been reported by '. $this->sender,
-            'url' => '/reports'
+            'subject' => 'Return borrowed component',
+            'message' => 'Hello '. $notifiable->name .',  the '. $this->borrow->component->name .' that you borrowed has been overdue. Please report to the department immediately',
+            'url' => '/borrowlogs',
         ];
     }
 }

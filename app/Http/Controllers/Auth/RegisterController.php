@@ -7,7 +7,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\CreateUser;
 use Carbon\Carbon;
+
 
 class RegisterController extends Controller
 {
@@ -84,13 +87,17 @@ class RegisterController extends Controller
             'verified' => false
          ];
 
-         if($data['account_type'] == 'admin' && $data['name'] == 'Administrator' && $data['email'] == 'admin@atmr.com'){
+         if($data['account_type'] == 'admin' && $data['name'] == 'Administrator'){
             $user['verified'] = true;
-         } 
+         }
          $user['id'] = Carbon::now()->format('YmdHis');
 
-        //  dd($user);
+         $newUser = User::create($user);
+         $admins = User::where('account_type', 'admin')->get();
+         if($user['verified'] == false){
+             Notification::send($admins, new CreateUser($newUser)); 
+         }
 
-         return User::create($user);
+         return $newUser;
     }
 }

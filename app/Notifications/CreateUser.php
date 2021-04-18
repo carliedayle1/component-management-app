@@ -6,24 +6,21 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use App\Component;
+use App\User;
 
-class SubmitReport extends Notification
+class CreateUser extends Notification 
 {
     use Queueable;
 
-    public $component;
-    public $sender;
-
+    public $user;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(Component $component, $sender)
+    public function __construct(User $user)
     {
-        $this->component = $component;
-        $this->sender = $sender;
+        $this->user = $user;
     }
 
     /**
@@ -57,19 +54,12 @@ class SubmitReport extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    // public function toArray($notifiable)
-    // {
-    //     return [
-    //         'data' => 'Sample notification'
-    //     ];
-    // }
-
     public function toDatabase($notifiable)
     {
         return [
-            'subject' => 'Report submission',
-            'message' => 'The '. $this->component->name .' with a model number of '.$this->component->model_number.' has been reported by '. $this->sender,
-            'url' => '/reports'
+            'subject' => 'User Registration',
+            'message' => $this->user->name.' has registered to the system and is currently unverified.',
+            'url' => '/users'
         ];
     }
 }

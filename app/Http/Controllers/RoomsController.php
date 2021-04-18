@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Middleware\CheckAccountType;
 use Carbon\Carbon;
 use App\Room;
 
@@ -10,7 +11,7 @@ class RoomsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', CheckAccountType::class]);
     }
 
     public function index()
@@ -37,5 +38,10 @@ class RoomsController extends Controller
 
         return redirect('/rooms')->with('room_created','Success');
 
+    }
+
+    public function view(Room $room)
+    {
+        return view('rooms.view', compact('room'));
     }
 }

@@ -28,7 +28,7 @@
                     <td>{{$room->type}}</td>
                     <td>{{\Carbon\Carbon::parse($room->created_at)->format('M d Y h:i A')}}</td>
                     <td>
-                        <a href="/rooms/1" class="btn btn-sm  btn-info"> View components </a>
+                        <a href="/rooms/{{$room->id}}" class="btn btn-sm  btn-info"> View </a>
                         <a href="/rooms/edit/1" class="btn btn-sm  btn-success"> Edit </a>
                     </td>
                 </tr>

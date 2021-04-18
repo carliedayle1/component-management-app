@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Middleware\CheckAccountType;
+use App\Notifications\AcceptUser;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Hash;
 use App\User;
 
 class UsersController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', CheckAccountType::class]);
     }
 
     public function index()
@@ -44,6 +48,9 @@ class UsersController extends Controller
         // dd($user->verified, $user->borrow_status);
         if(request('verified')){
             $validated['verified'] = true;
+
+            Notification::send($user, new AcceptUser($user));
+
         } else {
             $validated['verified'] = false;
         }
@@ -65,4 +72,6 @@ class UsersController extends Controller
 
         return back()->with('user_deleted', 'Success');
     }
+
+
 }
